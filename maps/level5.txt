@@ -1,0 +1,10 @@
+5
+P--T--T-T
+T--TT-TT-
+--T-TTT--
+T-T1---T-
+---T--T-T
+TT-T-TT--
+-TT--T-TT
+T-----TTT
+-T--T----
