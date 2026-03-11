@@ -21,7 +21,6 @@ SDL_Renderer* renderer;
 
 SDL_Texture* groundTile;
 SDL_Texture* treeTile;
-SDL_Texture* treeOutlineTile;
 std::array<SDL_Texture*, 5> flameTiles;
 SDL_Texture* flameTile;
 SDL_Texture* waterSprite;
@@ -304,7 +303,6 @@ int main()
 
     groundTile = LoadTexture("ground_tile");
     treeTile = LoadTexture("tree_base");
-    treeOutlineTile = LoadTexture("tree_outline");
     flameTiles[0] = LoadTexture("flame_1");
     flameTiles[1] = LoadTexture("flame_2");
     flameTiles[2] = LoadTexture("flame_3");
@@ -477,8 +475,8 @@ int main()
         TTF_AppendTextString(minTreeText, minTree.c_str(), 0);
 
         SDL_SetRenderScale(renderer, 1.0 / 16, 1.0 / 16);
-        TTF_DrawRendererText(treeCountText, 0, MAP_WIDTH * 16);
-        TTF_DrawRendererText(minTreeText, 0, MAP_WIDTH * 16 + 16);
+        TTF_DrawRendererText(treeCountText, 4, MAP_WIDTH * 16);
+        TTF_DrawRendererText(minTreeText, 4, MAP_WIDTH * 16 + 16);
         SDL_SetRenderScale(renderer, 1.0, 1.0f);
 
         SDL_RenderPresent(renderer);
