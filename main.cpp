@@ -14,7 +14,7 @@ using namespace glm;
 constexpr u32 MAP_WIDTH = 9;
 constexpr f32 MOVE_TIME = 0.2f;
 constexpr f32 WATER_MOVE_TIME = 0.1f;
-constexpr u32 MAX_LEVEL = 5;
+constexpr u32 MAX_LEVEL = 6;
 
 SDL_Window* window;
 SDL_Renderer* renderer;
@@ -27,8 +27,7 @@ SDL_Texture* waterSprite;
 SDL_Texture* playerSprite;
 TTF_Font* font;
 TTF_TextEngine* textEngine;
-TTF_Text* treeCountText;
-TTF_Text* minTreeText;
+TTF_Text* statusText;
 
 i32 windowWidth;
 i32 windowHeight;
@@ -47,9 +46,7 @@ u32 lostTrees;
 u32 maxLostTrees;
 
 bool gameWon;
-u32 levelNum;
-
-std::string currentMap;
+u32 currentLevel;
 
 struct MapCell
 {
@@ -64,11 +61,16 @@ inline MapCell& CellAt(ivec2 pos)
     return map[pos.x + pos.y * MAP_WIDTH];
 }
 
-bool LoadMap(std::string name)
+bool LoadLevel(u32 levelNum)
 {
-    currentMap = name;
+    if (levelNum > MAX_LEVEL)
+    {
+        levelNum = 1;
+    }
 
-    std::ifstream mapFile{"../maps/" + name + ".txt"};
+    std::string filename = std::format("../maps/level{}.txt", levelNum);
+
+    std::ifstream mapFile{filename};
 
     moveTimer = 0;
     water = false;
@@ -133,6 +135,7 @@ bool LoadMap(std::string name)
         }
     }
 
+    currentLevel = levelNum;
     return true;
 }
 
@@ -280,6 +283,8 @@ int main()
         return 1;
     }
 
+    TTF_SetFontLineSkip(font, 10);
+
     textEngine = TTF_CreateRendererTextEngine(renderer);
     if (textEngine == nullptr)
     {
@@ -287,15 +292,8 @@ int main()
         return 1;
     }
 
-    treeCountText = TTF_CreateText(textEngine, font, "Trees Alive: ", 0);
-    if (treeCountText == nullptr)
-    {
-        std::cerr << "Text could not be created! SDL_Error: " << SDL_GetError() << std::endl;
-        return 1;
-    }
-
-    minTreeText = TTF_CreateText(textEngine, font, "Min Trees: ", 0);
-    if (minTreeText == nullptr)
+    statusText = TTF_CreateText(textEngine, font, "", 0);
+    if (statusText == nullptr)
     {
         std::cerr << "Text could not be created! SDL_Error: " << SDL_GetError() << std::endl;
         return 1;
@@ -311,11 +309,10 @@ int main()
     waterSprite = LoadTexture("water");
     playerSprite = LoadTexture("player");
 
-    if (!LoadMap("level1"))
+    if (!LoadLevel(1))
     {
         return 1;
     }
-    levelNum = 1;
 
     u64 then = SDL_GetPerformanceCounter();
 
@@ -393,7 +390,7 @@ int main()
                     }
                     if (event.key.key == SDLK_R)
                     {
-                        LoadMap(currentMap);
+                        LoadLevel(currentLevel);
                     }
                 }
                 break;
@@ -466,17 +463,11 @@ int main()
         SDL_FRect playerRect = {playerPosInterp.x, playerPosInterp.y, 1, 1};
         SDL_RenderTexture(renderer, playerSprite, nullptr, &playerRect);
 
-        TTF_DeleteTextString(treeCountText, 13, -1);
-        std::string treeCount = std::to_string(startingTrees - lostTrees);
-        TTF_AppendTextString(treeCountText, treeCount.c_str(), 0);
-
-        TTF_DeleteTextString(minTreeText, 11, -1);
-        std::string minTree = std::to_string(startingTrees - maxLostTrees);
-        TTF_AppendTextString(minTreeText, minTree.c_str(), 0);
+        std::string status = std::format("Level {}\nTrees Alive: {}\nMinimum Trees: {}", currentLevel, startingTrees - lostTrees, startingTrees - maxLostTrees);
+        TTF_SetTextString(statusText, status.c_str(), 0);
 
         SDL_SetRenderScale(renderer, 1.0 / 16, 1.0 / 16);
-        TTF_DrawRendererText(treeCountText, 4, MAP_WIDTH * 16);
-        TTF_DrawRendererText(minTreeText, 4, MAP_WIDTH * 16 + 16);
+        TTF_DrawRendererText(statusText, 4, MAP_WIDTH * 16);
         SDL_SetRenderScale(renderer, 1.0, 1.0f);
 
         SDL_RenderPresent(renderer);
@@ -488,7 +479,7 @@ int main()
                 "You lost...",
                 "Too many trees burned down...",
                 window);
-            LoadMap(currentMap);
+            LoadLevel(currentLevel);
         }
         else if (gameWon)
         {
@@ -497,13 +488,7 @@ int main()
                 "You won!",
                 "You saved the forest.",
                 window);
-            levelNum++;
-            if (levelNum > MAX_LEVEL)
-            {
-                levelNum = 1;
-            }
-            std::string nextLevel = std::format("level{}", levelNum);
-            LoadMap(nextLevel);
+            LoadLevel(currentLevel + 1);
         }
     }
 }
