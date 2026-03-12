@@ -6,8 +6,9 @@
 
 #include <SDL3/SDL.h>
 #include <SDL3_image/SDL_image.h>
-#include <SDL3_ttf/SDL_ttf.h>
 #include <glm/glm.hpp>
+
+#include "font_widths.h"
 
 using namespace glm;
 
@@ -25,9 +26,7 @@ std::array<SDL_Texture*, 5> flameTiles;
 SDL_Texture* flameTile;
 SDL_Texture* waterSprite;
 SDL_Texture* playerSprite;
-TTF_Font* font;
-TTF_TextEngine* textEngine;
-TTF_Text* statusText;
+SDL_Texture* fontAtlas;
 
 i32 windowWidth;
 i32 windowHeight;
@@ -157,7 +156,7 @@ SDL_Texture* LoadTexture(std::string filename)
     {
         std::cerr << "Failed to create texture from " << filename << "! SDL_Error: " << SDL_GetError() << std::endl;
     }
-    SDL_SetTextureScaleMode(texture, SDL_SCALEMODE_NEAREST);
+    SDL_SetTextureScaleMode(texture, SDL_SCALEMODE_PIXELART);
     return texture;
 }
 
@@ -246,6 +245,36 @@ void ShootWater(ivec2 direction)
     waterTarget = pos;
 }
 
+void DrawText(std::string& text, vec2 pos)
+{
+    vec2 currentPos = pos;
+    for (u8 c : text)
+    {
+        if (c == '\n')
+        {
+            currentPos.x = pos.x;
+            currentPos.y += 0.625;
+        }
+        else
+        {
+            u32 charRow = c / 16;
+            u32 charCol = c % 16;
+
+            f32 width = 16;
+            if (c > 31 && c < 128)
+            {
+                width = fontWidths[c - 32];
+            }
+
+            SDL_FRect srcRect = {charCol * 8.0f, charRow * 8.0f, width, 8};
+            SDL_FRect destRect = {currentPos.x, currentPos.y, width / 16.0f, 0.5};
+            SDL_RenderTexture(renderer, fontAtlas, &srcRect, &destRect);
+
+            currentPos.x += width / 16.0f;
+        }
+    }
+}
+
 int main()
 {
     if (!SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS))
@@ -270,35 +299,6 @@ int main()
 
     SDL_SetRenderLogicalPresentation(renderer, MAP_WIDTH, MAP_WIDTH + 2, SDL_LOGICAL_PRESENTATION_LETTERBOX);
 
-    if (!TTF_Init())
-    {
-        std::cerr << "SDL_ttf could not initialize! SDL_Error: " << SDL_GetError() << std::endl;
-        return 1;
-    }
-
-    font = TTF_OpenFont("../fonts/scientifica.ttf", 11);
-    if (font == nullptr)
-    {
-        std::cerr << "Font could not be loaded! SDL_Error: " << SDL_GetError() << std::endl;
-        return 1;
-    }
-
-    TTF_SetFontLineSkip(font, 10);
-
-    textEngine = TTF_CreateRendererTextEngine(renderer);
-    if (textEngine == nullptr)
-    {
-        std::cerr << "Text engine could not be created! SDL_Error: " << SDL_GetError() << std::endl;
-        return 1;
-    }
-
-    statusText = TTF_CreateText(textEngine, font, "", 0);
-    if (statusText == nullptr)
-    {
-        std::cerr << "Text could not be created! SDL_Error: " << SDL_GetError() << std::endl;
-        return 1;
-    }
-
     groundTile = LoadTexture("ground_tile");
     treeTile = LoadTexture("tree_base");
     flameTiles[0] = LoadTexture("flame_1");
@@ -308,6 +308,7 @@ int main()
     flameTiles[4] = LoadTexture("flame_5");
     waterSprite = LoadTexture("water");
     playerSprite = LoadTexture("player");
+    fontAtlas = LoadTexture("font_atlas");
 
     if (!LoadLevel(1))
     {
@@ -464,11 +465,7 @@ int main()
         SDL_RenderTexture(renderer, playerSprite, nullptr, &playerRect);
 
         std::string status = std::format("Level {}\nTrees Alive: {}\nMinimum Trees: {}", currentLevel, startingTrees - lostTrees, startingTrees - maxLostTrees);
-        TTF_SetTextString(statusText, status.c_str(), 0);
-
-        SDL_SetRenderScale(renderer, 1.0 / 16, 1.0 / 16);
-        TTF_DrawRendererText(statusText, 4, MAP_WIDTH * 16);
-        SDL_SetRenderScale(renderer, 1.0, 1.0f);
+        DrawText(status, {0.25, MAP_WIDTH + 0.125});
 
         SDL_RenderPresent(renderer);
 
