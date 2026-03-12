@@ -8,14 +8,22 @@
 #include <SDL3_image/SDL_image.h>
 #include <glm/glm.hpp>
 
-#include "font_widths.h"
-
 using namespace glm;
 
 constexpr u32 MAP_WIDTH = 9;
 constexpr f32 MOVE_TIME = 0.2f;
 constexpr f32 WATER_MOVE_TIME = 0.1f;
 constexpr u32 MAX_LEVEL = 7;
+
+constexpr std::array<u32, 96> fontWidths
+{
+    4, 4, 5, 6, 7, 6, 6, 3, 4, 5, 5, 6, 3, 6, 2, 6,
+    6, 5, 6, 6, 6, 6, 6, 6, 6, 6, 2, 2, 5, 6, 5, 6,
+    7, 6, 6, 6, 6, 6, 6, 6, 6, 4, 7, 7, 6, 8, 7, 7,
+    6, 7, 7, 6, 6, 7, 6, 8, 6, 6, 6, 4, 6, 4, 6, 6,
+    3, 6, 6, 6, 6, 6, 5, 6, 6, 2, 6, 5, 4, 8, 6, 6,
+    6, 6, 6, 6, 5, 6, 6, 6, 6, 6, 7, 5, 2, 5, 7, 6
+};
 
 SDL_Window* window;
 SDL_Renderer* renderer;
