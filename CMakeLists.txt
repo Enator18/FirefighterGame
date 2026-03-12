@@ -9,6 +9,7 @@ set(CPM_SOURCE_CACHE "${CMAKE_CURRENT_SOURCE_DIR}/packages")
 
 set(BUILD_SHARED_LIBS OFF)
 set(SDL_SHARED OFF)
+set(SDL_STATIC ON)
 
 CPMAddPackage("gh:libsdl-org/SDL#release-3.4.2")
 CPMAddPackage("gh:libsdl-org/SDL_image#release-3.4.0")
