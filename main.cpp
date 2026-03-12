@@ -14,8 +14,8 @@ constexpr u32 MAP_WIDTH = 9;
 constexpr f32 MOVE_TIME = 0.2f;
 constexpr f32 WATER_MOVE_TIME = 0.1f;
 constexpr u32 MAX_LEVEL = 7;
-
-constexpr std::array<u32, 96> fontWidths
+constexpr u32 FONT_HEIGHT = 10;
+constexpr std::array<u32, 96> FONT_WIDTHS
 {
     4, 4, 5, 6, 7, 6, 6, 3, 4, 5, 5, 6, 3, 6, 2, 6,
     6, 5, 6, 6, 6, 6, 6, 6, 6, 6, 2, 2, 5, 6, 5, 6,
@@ -261,7 +261,7 @@ void DrawText(std::string& text, vec2 pos)
         if (c == '\n')
         {
             currentPos.x = pos.x;
-            currentPos.y += 0.625;
+            currentPos.y += FONT_HEIGHT / 16.0;
         }
         else
         {
@@ -271,7 +271,7 @@ void DrawText(std::string& text, vec2 pos)
             f32 width = 16;
             if (c > 31 && c < 128)
             {
-                width = fontWidths[c - 32];
+                width = FONT_WIDTHS[c - 32];
             }
 
             SDL_FRect srcRect = {charCol * 8.0f, charRow * 8.0f, width, 8};
