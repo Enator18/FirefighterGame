@@ -306,6 +306,7 @@ int main()
     }
 
     SDL_SetRenderLogicalPresentation(renderer, MAP_WIDTH, MAP_WIDTH + 2, SDL_LOGICAL_PRESENTATION_LETTERBOX);
+    SDL_SetRenderVSync(renderer, SDL_RENDERER_VSYNC_ADAPTIVE);
 
     groundTile = LoadTexture("ground_tile");
     treeTile = LoadTexture("tree_base");
