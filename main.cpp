@@ -318,7 +318,7 @@ int main()
     playerSprite = LoadTexture("player");
     fontAtlas = LoadTexture("font_atlas");
 
-    if (!LoadLevel(1))
+    if (!LoadLevel(4))
     {
         return 1;
     }
