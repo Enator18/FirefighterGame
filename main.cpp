@@ -13,7 +13,7 @@ using namespace glm;
 constexpr u32 MAP_WIDTH = 9;
 constexpr f32 MOVE_TIME = 0.2f;
 constexpr f32 WATER_MOVE_TIME = 0.1f;
-constexpr u32 MAX_LEVEL = 7;
+constexpr u32 MAX_LEVEL = 8;
 constexpr u32 FONT_HEIGHT = 10;
 constexpr std::array<u32, 96> FONT_WIDTHS
 {
