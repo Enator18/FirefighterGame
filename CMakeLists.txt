@@ -7,6 +7,8 @@ include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/CPM.cmake)
 
 set(CPM_SOURCE_CACHE "${CMAKE_CURRENT_SOURCE_DIR}/packages")
 
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+
 set(BUILD_SHARED_LIBS OFF)
 set(SDL_SHARED OFF)
 set(SDL_STATIC ON)
@@ -41,5 +43,7 @@ CPMAddPackage("gh:libsdl-org/SDL_image#release-3.4.0")
 CPMAddPackage("gh:g-truc/glm#1.0.1")
 
 add_executable(FirefighterGame main.cpp)
+
+target_precompile_headers(FirefighterGame PRIVATE <glm/glm.hpp>)
 
 target_link_libraries(FirefighterGame PRIVATE SDL3::SDL3 SDL3_image::SDL3_image glm::glm)

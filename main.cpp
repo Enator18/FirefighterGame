@@ -13,7 +13,7 @@ using namespace glm;
 constexpr u32 MAP_WIDTH = 9;
 constexpr f32 MOVE_TIME = 0.2f;
 constexpr f32 WATER_MOVE_TIME = 0.1f;
-constexpr u32 MAX_LEVEL = 8;
+constexpr u32 MAX_LEVEL = 9;
 constexpr u32 FONT_HEIGHT = 10;
 constexpr std::array<u32, 96> FONT_WIDTHS
 {
@@ -75,7 +75,7 @@ bool LoadLevel(u32 levelNum)
         levelNum = 1;
     }
 
-    std::string filename = std::format("../maps/level{}.txt", levelNum);
+    std::string filename = std::format("maps/level{}.txt", levelNum);
 
     std::ifstream mapFile{filename};
 
@@ -158,7 +158,7 @@ inline bool PosInBounds(ivec2 pos)
 
 SDL_Texture* LoadTexture(std::string filename)
 {
-    std::string path = "../textures/" + filename + ".png";
+    std::string path = "textures/" + filename + ".png";
     SDL_Texture* texture = IMG_LoadTexture(renderer, path.c_str());
     if (texture == nullptr)
     {
