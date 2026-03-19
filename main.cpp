@@ -472,7 +472,8 @@ int main()
         SDL_FRect playerRect = {playerPosInterp.x, playerPosInterp.y, 1, 1};
         SDL_RenderTexture(renderer, playerSprite, nullptr, &playerRect);
 
-        std::string status = std::format("Level {}\nTrees Alive: {}\nMinimum Trees: {}", currentLevel, startingTrees - lostTrees, startingTrees - maxLostTrees);
+        std::string status = std::format("Level {}\nTrees Alive: {}\nMinimum Trees: {}",
+            currentLevel, startingTrees - lostTrees, startingTrees - maxLostTrees);
         DrawText(status, {0.25, MAP_WIDTH + 0.125});
 
         SDL_RenderPresent(renderer);
