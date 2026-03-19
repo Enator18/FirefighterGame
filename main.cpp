@@ -5,7 +5,6 @@
 #include <format>
 
 #include <SDL3/SDL.h>
-#include <SDL3_image/SDL_image.h>
 #include <glm/glm.hpp>
 
 using namespace glm;
@@ -159,7 +158,8 @@ inline bool PosInBounds(ivec2 pos)
 SDL_Texture* LoadTexture(std::string filename)
 {
     std::string path = "textures/" + filename + ".png";
-    SDL_Texture* texture = IMG_LoadTexture(renderer, path.c_str());
+    SDL_Surface* surface = SDL_LoadPNG(path.c_str());
+    SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
     if (texture == nullptr)
     {
         std::cerr << "Failed to create texture from " << filename << "! SDL_Error: " << SDL_GetError() << std::endl;
@@ -411,10 +411,9 @@ int main()
             }
         }
 
-        SDL_SetRenderDrawColor(renderer, 0x00, 0x00, 0x00, 0xff);
+        SDL_SetRenderDrawColor(renderer, 0xcf, 0x19, 0x19, 0xff);
         SDL_RenderClear(renderer);
 
-        SDL_SetRenderDrawColor(renderer, 0x60, 0xa0, 0x40, 0xff);
         SDL_FRect background = {0, 0, 9, 9};
         SDL_RenderTextureTiled(renderer, groundTile, nullptr, 1.0 / groundTile->w, &background);
 
