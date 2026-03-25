@@ -5,7 +5,6 @@
 #include <format>
 
 #include <SDL3/SDL.h>
-#include <SDL3_image/SDL_image.h>
 #include <glm/glm.hpp>
 
 using namespace glm;
@@ -13,7 +12,7 @@ using namespace glm;
 constexpr u32 MAP_WIDTH = 9;
 constexpr f32 MOVE_TIME = 0.2f;
 constexpr f32 WATER_MOVE_TIME = 0.1f;
-constexpr u32 MAX_LEVEL = 8;
+constexpr u32 MAX_LEVEL = 9;
 constexpr u32 FONT_HEIGHT = 10;
 constexpr std::array<u32, 96> FONT_WIDTHS
 {
@@ -75,7 +74,7 @@ bool LoadLevel(u32 levelNum)
         levelNum = 1;
     }
 
-    std::string filename = std::format("../maps/level{}.txt", levelNum);
+    std::string filename = std::format("maps/level{}.txt", levelNum);
 
     std::ifstream mapFile{filename};
 
@@ -158,8 +157,9 @@ inline bool PosInBounds(ivec2 pos)
 
 SDL_Texture* LoadTexture(std::string filename)
 {
-    std::string path = "../textures/" + filename + ".png";
-    SDL_Texture* texture = IMG_LoadTexture(renderer, path.c_str());
+    std::string path = "textures/" + filename + ".png";
+    SDL_Surface* surface = SDL_LoadPNG(path.c_str());
+    SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
     if (texture == nullptr)
     {
         std::cerr << "Failed to create texture from " << filename << "! SDL_Error: " << SDL_GetError() << std::endl;
@@ -411,10 +411,9 @@ int main()
             }
         }
 
-        SDL_SetRenderDrawColor(renderer, 0x00, 0x00, 0x00, 0xff);
+        SDL_SetRenderDrawColor(renderer, 0xcf, 0x19, 0x19, 0xff);
         SDL_RenderClear(renderer);
 
-        SDL_SetRenderDrawColor(renderer, 0x60, 0xa0, 0x40, 0xff);
         SDL_FRect background = {0, 0, 9, 9};
         SDL_RenderTextureTiled(renderer, groundTile, nullptr, 1.0 / groundTile->w, &background);
 
@@ -473,7 +472,8 @@ int main()
         SDL_FRect playerRect = {playerPosInterp.x, playerPosInterp.y, 1, 1};
         SDL_RenderTexture(renderer, playerSprite, nullptr, &playerRect);
 
-        std::string status = std::format("Level {}\nTrees Alive: {}\nMinimum Trees: {}", currentLevel, startingTrees - lostTrees, startingTrees - maxLostTrees);
+        std::string status = std::format("Level {}\nTrees Alive: {}\nMinimum Trees: {}",
+            currentLevel, startingTrees - lostTrees, startingTrees - maxLostTrees);
         DrawText(status, {0.25, MAP_WIDTH + 0.125});
 
         SDL_RenderPresent(renderer);
