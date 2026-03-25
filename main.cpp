@@ -41,6 +41,7 @@ i32 windowHeight;
 ivec2 newPlayerPos;
 ivec2 playerPos;
 f32 moveTimer;
+bool moving;
 
 ivec2 waterTarget;
 f32 waterTime;
@@ -79,6 +80,7 @@ bool LoadLevel(u32 levelNum)
     std::ifstream mapFile{filename};
 
     moveTimer = 0;
+    moving = false;
     water = false;
     gameWon = false;
 
@@ -240,7 +242,6 @@ void AdvanceTime()
 
 void ShootWater(ivec2 direction)
 {
-    AdvanceTime();
     water = true;
     waterAnimTimer = 1.0;
     waterTime = 0;
@@ -347,7 +348,7 @@ int main()
                 {
                     return 0;
                 }
-                if (moveTimer <= 0 && !water)
+                if (!(moving || water))
                 {
                     playerPos = newPlayerPos;
                     if (event.key.key == SDLK_W && newPlayerPos.y > 0)
@@ -375,7 +376,7 @@ int main()
                         else
                         {
                             moveTimer = 1.0;
-                            AdvanceTime();
+                            moving = true;
                         }
                     }
                     if (event.key.key == SDLK_UP)
@@ -411,19 +412,16 @@ int main()
             }
         }
 
-        SDL_SetRenderDrawColor(renderer, 0xcf, 0x19, 0x19, 0xff);
-        SDL_RenderClear(renderer);
-
-        SDL_FRect background = {0, 0, 9, 9};
-        SDL_RenderTextureTiled(renderer, groundTile, nullptr, 1.0 / groundTile->w, &background);
-
-        if (moveTimer > 0)
+        if (moving)
         {
             moveTimer -= delta / MOVE_TIME;
-        }
-        if (moveTimer < 0)
-        {
-            moveTimer = 0;
+
+            if (moveTimer < 0)
+            {
+                moving = false;
+                moveTimer = 0;
+                AdvanceTime();
+            }
         }
 
         if (water)
@@ -436,10 +434,16 @@ int main()
                 if (PosInBounds(waterTarget))
                 {
                     CellAt(waterTarget).fireCount = 0;
-                    CheckWin();
                 }
+                AdvanceTime();
             }
         }
+
+        SDL_SetRenderDrawColor(renderer, 0xcf, 0x19, 0x19, 0xff);
+        SDL_RenderClear(renderer);
+
+        SDL_FRect background = {0, 0, 9, 9};
+        SDL_RenderTextureTiled(renderer, groundTile, nullptr, 1.0 / groundTile->w, &background);
 
         if (water)
         {
