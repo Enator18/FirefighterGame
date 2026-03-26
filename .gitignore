@@ -5,3 +5,4 @@ cmake-build-release/
 packages/
 FirefighterGame
 FirefighterGame.exe
+FirefighterGame.pdb

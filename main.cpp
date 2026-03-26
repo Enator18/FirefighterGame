@@ -3,6 +3,7 @@
 #include <string>
 #include <array>
 #include <format>
+#include <vector>
 
 #include <SDL3/SDL.h>
 #include <glm/glm.hpp>
@@ -39,7 +40,6 @@ i32 windowWidth;
 i32 windowHeight;
 
 ivec2 newPlayerPos;
-ivec2 playerPos;
 f32 moveTimer;
 
 ivec2 waterTarget;
@@ -48,7 +48,6 @@ f32 waterAnimTimer;
 bool water;
 
 u32 startingTrees;
-u32 lostTrees;
 u32 maxLostTrees;
 
 bool gameWon;
@@ -60,11 +59,20 @@ struct MapCell
     u32 fireCount = 0;
 };
 
-std::array<MapCell, MAP_WIDTH * MAP_WIDTH> map{};
+struct GameState
+{
+    std::array<MapCell, MAP_WIDTH * MAP_WIDTH> map{};
+    ivec2 playerPos;
+    u32 lostTrees;
+};
+
+GameState state;
+
+std::vector<GameState> previousStates;
 
 inline MapCell& CellAt(ivec2 pos)
 {
-    return map[pos.x + pos.y * MAP_WIDTH];
+    return state.map[pos.x + pos.y * MAP_WIDTH];
 }
 
 bool LoadLevel(u32 levelNum)
@@ -78,6 +86,8 @@ bool LoadLevel(u32 levelNum)
 
     std::ifstream mapFile{filename};
 
+    previousStates.clear();
+
     moveTimer = 0;
     water = false;
     gameWon = false;
@@ -88,7 +98,7 @@ bool LoadLevel(u32 levelNum)
         return false;
     }
     maxLostTrees = std::stoi(line);
-    lostTrees = 0;
+    state.lostTrees = 0;
     startingTrees = 0;
 
     for (u32 row = 0; row < MAP_WIDTH; row++)
@@ -110,8 +120,8 @@ bool LoadLevel(u32 levelNum)
                 startingTrees++;
                 break;
             case 'P':
-                playerPos = {col, row};
-                newPlayerPos = playerPos;
+                state.playerPos = {col, row};
+                newPlayerPos = state.playerPos;
                 CellAt({col, row}) = {};
                 break;
             case '1':
@@ -210,6 +220,7 @@ void CheckWin()
 
 void AdvanceTime()
 {
+    previousStates.push_back(state);
     for (u32 row = 0; row < MAP_WIDTH; row++)
     {
         for (u32 col = 0; col < MAP_WIDTH; col++)
@@ -231,7 +242,7 @@ void AdvanceTime()
                 cell.fireCount = 0;
                 cell.hasTree = false;
                 IgniteNeighbors(row, col);
-                lostTrees++;
+                state.lostTrees++;
             }
         }
     }
@@ -244,7 +255,7 @@ void ShootWater(ivec2 direction)
     water = true;
     waterAnimTimer = 1.0;
     waterTime = 0;
-    ivec2 pos = playerPos;
+    ivec2 pos = state.playerPos;
     while (PosInBounds(pos) && !CellAt(pos).hasTree)
     {
         pos += direction;
@@ -349,7 +360,7 @@ int main()
                 }
                 if (moveTimer <= 0 && !water)
                 {
-                    playerPos = newPlayerPos;
+                    state.playerPos = newPlayerPos;
                     if (event.key.key == SDLK_W && newPlayerPos.y > 0)
                     {
                         newPlayerPos.y--;
@@ -366,11 +377,11 @@ int main()
                     {
                         newPlayerPos.x++;
                     }
-                    if (newPlayerPos != playerPos)
+                    if (newPlayerPos != state.playerPos)
                     {
                         if (CellAt(newPlayerPos).hasTree)
                         {
-                            newPlayerPos = playerPos;
+                            newPlayerPos = state.playerPos;
                         }
                         else
                         {
@@ -401,6 +412,15 @@ int main()
                     if (event.key.key == SDLK_R)
                     {
                         LoadLevel(currentLevel);
+                    }
+                    if (event.key.key == SDLK_Z)
+                    {
+                        if (!previousStates.empty())
+                        {
+                            state = previousStates.back();
+                            previousStates.pop_back();
+                            newPlayerPos = state.playerPos;
+                        }
                     }
                 }
                 break;
@@ -444,7 +464,7 @@ int main()
         if (water)
         {
             vec2 waterPosInterp = static_cast<vec2>(waterTarget) +
-                (static_cast<vec2>(playerPos) - static_cast<vec2>(waterTarget)) * waterAnimTimer;
+                (static_cast<vec2>(state.playerPos) - static_cast<vec2>(waterTarget)) * waterAnimTimer;
             SDL_FRect waterRect = {waterPosInterp.x, waterPosInterp.y, 1, 1};
             SDL_RenderTexture(renderer, waterSprite, nullptr, &waterRect);
         }
@@ -468,17 +488,17 @@ int main()
         }
 
         vec2 playerPosInterp = static_cast<vec2>(newPlayerPos) +
-            (static_cast<vec2>(playerPos) - static_cast<vec2>(newPlayerPos)) * moveTimer;
+            (static_cast<vec2>(state.playerPos) - static_cast<vec2>(newPlayerPos)) * moveTimer;
         SDL_FRect playerRect = {playerPosInterp.x, playerPosInterp.y, 1, 1};
         SDL_RenderTexture(renderer, playerSprite, nullptr, &playerRect);
 
         std::string status = std::format("Level {}\nTrees Alive: {}\nMinimum Trees: {}",
-            currentLevel, startingTrees - lostTrees, startingTrees - maxLostTrees);
+            currentLevel, startingTrees - state.lostTrees, startingTrees - maxLostTrees);
         DrawText(status, {0.25, MAP_WIDTH + 0.125});
 
         SDL_RenderPresent(renderer);
 
-        if (lostTrees > maxLostTrees)
+        if (state.lostTrees > maxLostTrees)
         {
             SDL_ShowSimpleMessageBox(
                 SDL_MESSAGEBOX_INFORMATION,

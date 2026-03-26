@@ -22,13 +22,10 @@ set(SDL_DIALOG OFF)
 set(SDL_TRAY OFF)
 
 CPMAddPackage("gh:libsdl-org/SDL#release-3.4.2")
-CPMAddPackage("gh:libsdl-org/SDL_image#release-3.4.0")
 CPMAddPackage("gh:libsdl-org/SDL_mixer#release-3.2.0")
 CPMAddPackage("gh:g-truc/glm#1.0.1")
 
 add_executable(FirefighterGame main.cpp)
 
-target_link_libraries(FirefighterGame PRIVATE SDL3::SDL3 SDL3_image::SDL3_image SDL3_mixer::SDL3_mixer glm::glm)
+target_link_libraries(FirefighterGame PRIVATE SDL3::SDL3 SDL3_mixer::SDL3_mixer glm::glm)
 target_precompile_headers(FirefighterGame PRIVATE <glm/glm.hpp>)
-
-target_link_libraries(FirefighterGame PRIVATE SDL3::SDL3 glm::glm)
