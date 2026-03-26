@@ -30,9 +30,11 @@ SDL_Renderer* renderer;
 
 SDL_Texture* groundTile;
 SDL_Texture* treeTile;
+SDL_Texture* treeTrunkTile;
 std::array<SDL_Texture*, 5> flameTiles;
 SDL_Texture* flameTile;
 SDL_Texture* waterSprite;
+SDL_Texture* waterTankTile;
 SDL_Texture* playerSprite;
 SDL_Texture* fontAtlas;
 
@@ -327,6 +329,7 @@ int main()
     flameTiles[3] = LoadTexture("flame_4");
     flameTiles[4] = LoadTexture("flame_5");
     waterSprite = LoadTexture("water");
+    waterTankTile = LoadTexture("water_tank");
     playerSprite = LoadTexture("player");
     fontAtlas = LoadTexture("font_atlas");
 
@@ -479,6 +482,7 @@ int main()
                 if (cell.hasTree)
                 {
                     SDL_RenderTexture(renderer, treeTile, nullptr, &tileRect);
+
                     if (cell.fireCount > 0)
                     {
                         SDL_RenderTexture(renderer, flameTiles[cell.fireCount - 1], nullptr, &tileRect);
