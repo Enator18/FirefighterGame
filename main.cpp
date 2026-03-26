@@ -35,6 +35,7 @@ std::array<SDL_Texture*, 5> flameTiles;
 SDL_Texture* flameTile;
 SDL_Texture* waterSprite;
 SDL_Texture* waterTankTile;
+SDL_Texture* bigWaterSprite;
 SDL_Texture* playerSprite;
 SDL_Texture* fontAtlas;
 
@@ -330,6 +331,7 @@ int main()
     flameTiles[4] = LoadTexture("flame_5");
     waterSprite = LoadTexture("water");
     waterTankTile = LoadTexture("water_tank");
+    bigWaterSprite = LoadTexture("big_water");
     playerSprite = LoadTexture("player");
     fontAtlas = LoadTexture("font_atlas");
 
