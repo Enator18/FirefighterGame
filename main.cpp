@@ -58,8 +58,9 @@ u32 currentLevel;
 
 struct MapCell
 {
-    bool hasTree = false;
     u32 fireCount = 0;
+    bool hasTree = false;
+    bool hasTank = false;
 };
 
 struct GameState
@@ -67,6 +68,7 @@ struct GameState
     std::array<MapCell, MAP_WIDTH * MAP_WIDTH> map{};
     ivec2 playerPos;
     u32 lostTrees;
+    bool hasTank = false;
 };
 
 GameState state;
@@ -102,6 +104,7 @@ bool LoadLevel(u32 levelNum)
     }
     maxLostTrees = std::stoi(line);
     state.lostTrees = 0;
+    state.hasTank = false;
     startingTrees = 0;
 
     for (u32 row = 0; row < MAP_WIDTH; row++)
@@ -119,7 +122,7 @@ bool LoadLevel(u32 levelNum)
             switch (line[col])
             {
             case 'T':
-                CellAt({col, row}) = {true};
+                CellAt({col, row}) = {0, true};
                 startingTrees++;
                 break;
             case 'P':
@@ -127,24 +130,27 @@ bool LoadLevel(u32 levelNum)
                 newPlayerPos = state.playerPos;
                 CellAt({col, row}) = {};
                 break;
+            case 'W':
+                CellAt({col, row}) = {0, false, true};
+                break;
             case '1':
-                CellAt({col, row}) = {true, 1};
+                CellAt({col, row}) = {1, true};
                 startingTrees++;
                 break;
             case '2':
-                CellAt({col, row}) = {true, 2};
+                CellAt({col, row}) = {2, true};
                 startingTrees++;
                 break;
             case '3':
-                CellAt({col, row}) = {true, 3};
+                CellAt({col, row}) = {3, true};
                 startingTrees++;
                 break;
             case '4':
-                CellAt({col, row}) = {true, 4};
+                CellAt({col, row}) = {4, true};
                 startingTrees++;
                 break;
             case '5':
-                CellAt({col, row}) = {true, 5};
+                CellAt({col, row}) = {5, true};
                 startingTrees++;
                 break;
             default:
@@ -335,7 +341,7 @@ int main()
     playerSprite = LoadTexture("player");
     fontAtlas = LoadTexture("font_atlas");
 
-    if (!LoadLevel(1))
+    if (!LoadLevel(9))
     {
         return 1;
     }
@@ -391,6 +397,12 @@ int main()
                         else
                         {
                             moveTimer = 1.0;
+                            MapCell& newCell = CellAt(newPlayerPos);
+                            if (newCell.hasTank)
+                            {
+                                newCell.hasTank = false;
+                                state.hasTank = true;
+                            }
                             AdvanceTime();
                         }
                     }
@@ -489,6 +501,10 @@ int main()
                     {
                         SDL_RenderTexture(renderer, flameTiles[cell.fireCount - 1], nullptr, &tileRect);
                     }
+                }
+                if (cell.hasTank)
+                {
+                    SDL_RenderTexture(renderer, waterTankTile, nullptr, &tileRect);
                 }
             }
         }
