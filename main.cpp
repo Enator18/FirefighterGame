@@ -68,7 +68,7 @@ struct GameState
     std::array<MapCell, MAP_WIDTH * MAP_WIDTH> map{};
     ivec2 playerPos;
     u32 lostTrees;
-    bool hasTank = false;
+    bool bigWater = false;
 };
 
 GameState state;
@@ -104,7 +104,7 @@ bool LoadLevel(u32 levelNum)
     }
     maxLostTrees = std::stoi(line);
     state.lostTrees = 0;
-    state.hasTank = false;
+    state.bigWater = false;
     startingTrees = 0;
 
     for (u32 row = 0; row < MAP_WIDTH; row++)
@@ -401,7 +401,7 @@ int main()
                             if (newCell.hasTank)
                             {
                                 newCell.hasTank = false;
-                                state.hasTank = true;
+                                state.bigWater = true;
                             }
                             AdvanceTime();
                         }
@@ -470,11 +470,30 @@ int main()
             if (waterAnimTimer < 0)
             {
                 water = false;
-                if (PosInBounds(waterTarget))
+                if (state.bigWater)
                 {
-                    CellAt(waterTarget).fireCount = 0;
-                    CheckWin();
+                    for (i32 x = -1; x < 2; x++)
+                    {
+                        for (i32 y = -1; y < 2; y++)
+                        {
+                            ivec2 treePos = waterTarget + ivec2{x, y};
+                            if (PosInBounds(treePos))
+                            {
+                                CellAt(treePos).fireCount = 0;
+                            }
+                            CheckWin();
+                        }
+                    }
                 }
+                else
+                {
+                    if (PosInBounds(waterTarget))
+                    {
+                        CellAt(waterTarget).fireCount = 0;
+                        CheckWin();
+                    }
+                }
+                state.bigWater = false;
             }
         }
 
@@ -483,7 +502,14 @@ int main()
             vec2 waterPosInterp = static_cast<vec2>(waterTarget) +
                 (static_cast<vec2>(state.playerPos) - static_cast<vec2>(waterTarget)) * waterAnimTimer;
             SDL_FRect waterRect = {waterPosInterp.x, waterPosInterp.y, 1, 1};
-            SDL_RenderTexture(renderer, waterSprite, nullptr, &waterRect);
+            if (state.bigWater)
+            {
+                SDL_RenderTexture(renderer, bigWaterSprite, nullptr, &waterRect);
+            }
+            else
+            {
+                SDL_RenderTexture(renderer, waterSprite, nullptr, &waterRect);
+            }
         }
 
         for (f32 row = 0; row < MAP_WIDTH; row++)
