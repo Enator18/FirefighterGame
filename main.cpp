@@ -341,7 +341,7 @@ int main()
     playerSprite = LoadTexture("player");
     fontAtlas = LoadTexture("font_atlas");
 
-    if (!LoadLevel(9))
+    if (!LoadLevel(1))
     {
         return 1;
     }
@@ -406,42 +406,36 @@ int main()
                             AdvanceTime();
                         }
                     }
-                    if (event.key.key == SDLK_UP)
+                    switch (event.key.key)
                     {
-                        ShootWater({0, -1});
-                    }
-                    if (event.key.key == SDLK_DOWN)
-                    {
-                        ShootWater({0, 1});
-                    }
-                    if (event.key.key == SDLK_LEFT)
-                    {
-                        ShootWater({-1, 0});
-                    }
-                    if (event.key.key == SDLK_RIGHT)
-                    {
-                        ShootWater({1, 0});
-                    }
-                    if (event.key.key == SDLK_SPACE)
-                    {
-                        AdvanceTime();
-                    }
-                    if (event.key.key == SDLK_R)
-                    {
-                        LoadLevel(currentLevel);
-                    }
-                    if (event.key.key == SDLK_Z)
-                    {
-                        if (!previousStates.empty())
-                        {
-                            state = previousStates.back();
-                            previousStates.pop_back();
-                            newPlayerPos = state.playerPos;
-                        }
+                        case SDLK_UP:
+                            ShootWater({0, -1});
+                            break;
+                        case SDLK_DOWN:
+                            ShootWater({0, 1});
+                            break;
+                        case SDLK_LEFT:
+                            ShootWater({-1, 0});
+                            break;
+                        case SDLK_RIGHT:
+                            ShootWater({1, 0});
+                            break;
+                        case SDLK_SPACE:
+                            AdvanceTime();
+                            break;
+                        case SDLK_R:
+                            LoadLevel(currentLevel);
+                            break;
+                        case SDLK_Z:
+                            if (!previousStates.empty())
+                            {
+                                state = previousStates.back();
+                                previousStates.pop_back();
+                                newPlayerPos = state.playerPos;
+                            }
+                            break;
                     }
                 }
-                break;
-            case SDL_EVENT_KEY_UP:
                 break;
             default:
                 break;
@@ -495,12 +489,9 @@ int main()
                 }
                 state.bigWater = false;
             }
-        }
 
-        if (water)
-        {
             vec2 waterPosInterp = static_cast<vec2>(waterTarget) +
-                (static_cast<vec2>(state.playerPos) - static_cast<vec2>(waterTarget)) * waterAnimTimer;
+                            (static_cast<vec2>(state.playerPos) - static_cast<vec2>(waterTarget)) * waterAnimTimer;
             SDL_FRect waterRect = {waterPosInterp.x, waterPosInterp.y, 1, 1};
             if (state.bigWater)
             {
