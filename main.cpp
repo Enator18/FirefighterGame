@@ -49,7 +49,7 @@ enum ActionState
     IDLE
 };
 
-ActionState currentState;
+ActionState actionState;
 
 ivec2 animTarget;
 f32 animTimer;
@@ -182,7 +182,8 @@ bool LoadLevel(u32 levelNum)
 
     std::ifstream mapFile{filename};
 
-    currentState = IDLE;
+    actionState = IDLE;
+    animTimer = -1;
     gameWon = false;
 
     std::string line;
@@ -272,7 +273,7 @@ void ShootWater(ivec2 direction)
 {
     previousStates.push_back(state);
     state.map = nextMap;
-    currentState = WATER;
+    actionState = WATER;
     animTimer = 1.0;
     animTime = 0;
     ivec2 pos = state.playerPos;
@@ -320,7 +321,7 @@ bool HandleKey(SDL_Event event)
     {
         return false;
     }
-    if (currentState == IDLE)
+    if (actionState == IDLE)
     {
         ivec2 nextPos = state.playerPos;
         if (event.key.key == SDLK_W && nextPos.y > 0)
@@ -348,7 +349,7 @@ bool HandleKey(SDL_Event event)
                 animTimer = 1.0;
                 animTime = MOVE_TIME;
                 animTarget = nextPos;
-                currentState = MOVING;
+                actionState = MOVING;
                 MapCell& newCell = CellAt(state.map, nextPos);
                 if (newCell.hasTank)
                 {
@@ -386,6 +387,7 @@ bool HandleKey(SDL_Event event)
                     previousStates.pop_back();
                     nextMap = state.map;
                     AdvanceTime();
+                    animTimer = -1;
                 }
                 break;
             default:
@@ -403,7 +405,7 @@ void DrawFrame()
     SDL_FRect background = {0, 0, 9, 9};
     SDL_RenderTextureTiled(renderer, groundTile, nullptr, 1.0 / groundTile->w, &background);
 
-    if (currentState == WATER)
+    if (actionState == WATER)
     {
         vec2 waterPosInterp = static_cast<vec2>(animTarget) +
                         (static_cast<vec2>(state.playerPos) - static_cast<vec2>(animTarget)) * animTimer;
@@ -418,13 +420,15 @@ void DrawFrame()
         }
     }
 
+    MapState& drawMap = actionState == IDLE && animTimer < 0.5 ? nextMap : state.map;
+
     for (f32 row = 0; row < MAP_WIDTH; row++)
     {
         for (f32 col = 0; col < MAP_WIDTH; col++)
         {
             SDL_FRect tileRect = {col, row, 1, 1};
 
-            MapCell& cell = CellAt(state.map, {col, row});
+            MapCell& cell = CellAt(drawMap, {col, row});
             if (cell.hasTree)
             {
                 SDL_RenderTexture(renderer, treeTile, nullptr, &tileRect);
@@ -443,7 +447,7 @@ void DrawFrame()
 
     vec2 playerPosInterp = static_cast<vec2>(animTarget) +
         (static_cast<vec2>(state.playerPos) - static_cast<vec2>(animTarget)) * animTimer;
-    vec2 playerDrawPos = currentState == MOVING ? playerPosInterp : vec2(state.playerPos);
+    vec2 playerDrawPos = actionState == MOVING ? playerPosInterp : vec2(state.playerPos);
     SDL_FRect playerRect = {playerDrawPos.x, playerDrawPos.y, 1, 1};
     SDL_RenderTexture(renderer, playerSprite, nullptr, &playerRect);
 
@@ -532,7 +536,7 @@ int main()
         if (animTimer < 0)
         {
             animTimer = 0;
-            if (currentState == WATER)
+            if (actionState == WATER)
             {
                 if (state.bigWater)
                 {
@@ -559,16 +563,18 @@ int main()
                 }
                 state.bigWater = false;
             }
-            else if (currentState == MOVING)
+            else if (actionState == MOVING)
             {
                 state.playerPos = animTarget;
             }
-            if (currentState != IDLE)
+            if (actionState != IDLE)
             {
                 nextMap = state.map;
                 AdvanceTime();
             }
-            currentState = IDLE;
+            actionState = IDLE;
+            animTimer = 1.0f;
+            animTime = 1.5f;
         }
 
         DrawFrame();
