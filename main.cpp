@@ -143,8 +143,6 @@ void CheckWin()
 
 void AdvanceTime()
 {
-    previousStates.push_back(state);
-    state.map = nextMap;
     for (u32 row = 0; row < MAP_WIDTH; row++)
     {
         for (u32 col = 0; col < MAP_WIDTH; col++)
@@ -272,7 +270,8 @@ SDL_Texture* LoadTexture(std::string filename)
 
 void ShootWater(ivec2 direction)
 {
-    AdvanceTime();
+    previousStates.push_back(state);
+    state.map = nextMap;
     currentState = WATER;
     animTimer = 1.0;
     animTime = 0;
@@ -344,6 +343,8 @@ bool HandleKey(SDL_Event event)
         {
             if (!CellAt(state.map, nextPos).hasTree)
             {
+                previousStates.push_back(state);
+                state.map = nextMap;
                 animTimer = 1.0;
                 animTime = MOVE_TIME;
                 animTarget = nextPos;
@@ -371,6 +372,8 @@ bool HandleKey(SDL_Event event)
                 ShootWater({1, 0});
                 break;
             case SDLK_SPACE:
+                previousStates.push_back(state);
+                state.map = nextMap;
                 AdvanceTime();
                 break;
             case SDLK_R:
@@ -379,9 +382,10 @@ bool HandleKey(SDL_Event event)
             case SDLK_Z:
                 if (!previousStates.empty())
                 {
-                    nextMap = state.map;
                     state = previousStates.back();
                     previousStates.pop_back();
+                    nextMap = state.map;
+                    AdvanceTime();
                 }
                 break;
             default:
@@ -558,6 +562,11 @@ int main()
             else if (currentState == MOVING)
             {
                 state.playerPos = animTarget;
+            }
+            if (currentState != IDLE)
+            {
+                nextMap = state.map;
+                AdvanceTime();
             }
             currentState = IDLE;
         }
