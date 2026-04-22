@@ -38,6 +38,7 @@ SDL_Texture* waterTankTile;
 SDL_Texture* bigWaterSprite;
 SDL_Texture* playerSprite;
 SDL_Texture* fontAtlas;
+SDL_Texture* statusbarTexture;
 
 i32 windowWidth;
 i32 windowHeight;
@@ -399,7 +400,7 @@ bool HandleKey(SDL_Event event)
 
 void DrawFrame()
 {
-    SDL_SetRenderDrawColor(renderer, 0xcf, 0x19, 0x19, 0xff);
+    SDL_SetRenderDrawColor(renderer, 0x00, 0x00, 0x00, 0xff);
     SDL_RenderClear(renderer);
 
     SDL_FRect background = {0, 0, 9, 9};
@@ -451,7 +452,10 @@ void DrawFrame()
     SDL_FRect playerRect = {playerDrawPos.x, playerDrawPos.y, 1, 1};
     SDL_RenderTexture(renderer, playerSprite, nullptr, &playerRect);
 
-    std::string status = std::format("Level {}\nTrees Alive: {}\nMinimum Trees: {}",
+    SDL_FRect statusbarRect = {0, MAP_WIDTH, MAP_WIDTH, 2};
+    SDL_RenderTexture(renderer, statusbarTexture, nullptr, &statusbarRect);
+
+    std::string status = std::format("Level  {}\nTrees Alive  {}\nMinimum Trees  {}",
         currentLevel, startingTrees - state.map.lostTrees, startingTrees - maxLostTrees);
     DrawText(status, {0.25, MAP_WIDTH + 0.125});
 
@@ -495,6 +499,7 @@ int main()
     bigWaterSprite = LoadTexture("big_water");
     playerSprite = LoadTexture("player");
     fontAtlas = LoadTexture("font_atlas");
+    statusbarTexture = LoadTexture("statusbar");
 
     if (!LoadLevel(1))
     {
@@ -579,7 +584,7 @@ int main()
 
         DrawFrame();
 
-        if (state.map.lostTrees > maxLostTrees)
+        if (actionState == IDLE && state.map.lostTrees > maxLostTrees)
         {
             SDL_ShowSimpleMessageBox(
                 SDL_MESSAGEBOX_INFORMATION,
