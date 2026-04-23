@@ -28,5 +28,5 @@ CPMAddPackage("gh:g-truc/glm#1.0.1")
 
 add_executable(FirefighterGame main.cpp)
 
-target_link_libraries(FirefighterGame PRIVATE SDL3::SDL3 SDL3_mixer::SDL3_mixer glm::glm)
+target_link_libraries(FirefighterGame PRIVATE SDL3::SDL3 glm::glm)
 target_precompile_headers(FirefighterGame PRIVATE <glm/glm.hpp>)
