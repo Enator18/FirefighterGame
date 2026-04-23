@@ -470,7 +470,7 @@ int main()
         return 1;
     }
 
-    window = SDL_CreateWindow("Firefighter Game", 900, 1100, SDL_WINDOW_RESIZABLE);
+    window = SDL_CreateWindow("Firefighter Game", 864, 1056, SDL_WINDOW_RESIZABLE);
     if (window == nullptr)
     {
         std::cerr << "Window could not be created! SDL_Error: " << SDL_GetError() << std::endl;
